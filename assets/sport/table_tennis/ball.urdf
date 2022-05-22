@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<robot name="ball">
+    <link name="baselink">
+        <contact>
+            <restitution value="0.93" />
+        </contact>
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <mass value="0.0027"/>
+            <!-- I = 0.4 * m * ((r1^5 - r2^5) / (r1^3 - r2^3)) -->
+            <!-- r1 = 0.02 | r2 = 0.0196 -->
+            <inertia ixx="0.000000706" ixy="0" ixz="0" iyy="0.000000706" iyz="0" izz="0.000000706"/>
+        </inertial>
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="meshes/ball.obj" scale="1 1 1"/>
+            </geometry>
+            <material name="orange">
+                <color rgba="1.0 0.66 0.0 1"/>
+                <specular rgb="1 1 1"/>
+            </material>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="meshes/ball.obj" scale="1 1 1"/>
+            </geometry>
+        </collision>
+    </link>
+</robot>
