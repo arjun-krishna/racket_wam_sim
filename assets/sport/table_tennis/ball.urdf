@@ -2,7 +2,7 @@
 <robot name="ball">
     <link name="baselink">
         <contact>
-            <restitution value="0.93" />
+            <restitution value="1.0" />
         </contact>
         <inertial>
             <origin rpy="0 0 0" xyz="0 0 0"/>
