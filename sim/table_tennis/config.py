@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import MISSING, dataclass
 
 import pybullet as p
 import pybullet_utils.bullet_client as bc
@@ -7,7 +7,7 @@ import numpy as np
 
 @dataclass
 class BallPhysics:
-    mass: float = 1
+    mass: float = 0.0027
 
     # coefficients obtained from: https://arxiv.org/pdf/2109.03100.pdf
     drag_coef: float = 0.4
@@ -18,16 +18,6 @@ class BallPhysics:
     radius_1: float = 0.0196
     radius_2: float = 0.02
 
-    def drag_force(self, v) -> float:
-        A = np.pi * self.radius_2 * self.radius_2
-        return -0.5 * self.drag_coef * self.air_density * A * np.linalg.norm(v) * v
-
-    def magnus_force(self, v, w) -> float:
-        A = np.pi * self.radius_2 * self.radius_2
-        return (
-            0.5 * self.lift_coef * self.air_density * A * self.radius_2 * np.cross(w, v)
-        )
-
 
 @dataclass
 class TablePhysics:
@@ -37,17 +27,10 @@ class TablePhysics:
     extent_y: float = 0.762
     z: float = 0.74
 
-    # needs to be altered in URDF if changed
-    restitution: float = 0.93
+    # needs to be altered in URDF if changed (TODO make it programmatic)
+    restitution: float = 0.9
 
     collision_tol: float = 1e-3
-
-    def check_collision(self, pos: np.array, radius: float) -> bool:
-        return (
-            (-self.extent_x <= pos[0] <= self.extent_x)
-            and (-self.extent_y <= pos[1] <= self.extent_y)
-            and (pos[2] < self.z[2] + radius + self.collision_tol)
-        )
 
 
 @dataclass
@@ -69,11 +52,15 @@ class BallLauncher:
 
 @dataclass
 class WAMConfig:
-    pos: np.array
+    pos: np.array = np.array([0, -1.95, 3])
+    orientation: np.array = np.array([1, 0, 0, 0])
 
 
 @dataclass
 class SimConfig:
-    arm: WAMConfig
-    ball: BallPhysics
-    launcher: BallLauncher
+    arm: WAMConfig = MISSING
+    ball: BallPhysics = MISSING
+    table: TablePhysics = MISSING
+    launcher: BallLauncher = MISSING
+
+    gravity: float = 9.8

@@ -2,6 +2,7 @@ from typing import Tuple
 import numpy as np
 from sim.rigid_body import HollowSphere
 from sim.table_tennis.config import BallPhysics, TablePhysics
+from sim.table_tennis.physx import check_collision, drag_force, magnus_force
 from sim.utils import rotation_matrix_from_quat, quat_mult
 
 
@@ -20,7 +21,7 @@ class BallTraj:
 
     def handle_collision(self):
         # TODO: handle ground plane collision
-        if self.table.check_collision(self.rb.position, self.rb.radius_2):
+        if check_collision(self.table, self.ball, self.rb.position):
             # handle penetrating / seperating collision contact
             r = np.zeros(3)
             r[2] = self.table.z - self.rb.position[2]
@@ -79,8 +80,8 @@ class BallTraj:
 
         self.rb.linear_momentum += dt * (
             self.rb.mass * np.array([0, 0, -self.gravity])
-            + self.ball.drag_coef(v)
-            + self.ball.magnus_force(v, w)
+            + drag_force(self.ball, v)
+            + +magnus_force(self.ball, v, w)
         )
 
         self.rb.angular_momentum += 0  # forces act on COM
