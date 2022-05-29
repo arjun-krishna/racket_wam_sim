@@ -5,7 +5,7 @@ import time
 from sim.arm.config import WAMConfig
 
 # debug
-from sim.arm.controller import WAMController
+from sim.arm.joint_profile import JointProfiler
 
 p.connect(p.GUI)
 p.setAdditionalSearchPath(pd.getDataPath())
@@ -19,9 +19,9 @@ ball_id = p.loadURDF("assets/sport/table_tennis/ball.urdf", [0, -1, 2.1])
 robot_id = p.loadURDF(
     "assets/sport/table_tennis/wam7.urdf", [0, -1.95, 3], [1, 0, 0, 0], useFixedBase=1
 )
-controller = WAMController(
-    p, robot_id, WAMConfig(), False
-)  # set to True to traj joint_profile
+jp = JointProfiler(
+    p, robot_id, WAMConfig()
+) # separate tracking thread
 
 
 def reset():
@@ -174,6 +174,7 @@ def process_key_events():
 
 
 reset()
+jp.start()
 while True:
     enable_swing()
     apply_ball_forces()
@@ -181,4 +182,3 @@ while True:
     p.stepSimulation()
     time.sleep(1 / 240)
     process_key_events()
-    controller.step(None)
