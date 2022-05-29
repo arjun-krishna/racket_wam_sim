@@ -19,7 +19,10 @@ ball_id = p.loadURDF("assets/sport/table_tennis/ball.urdf", [0, -1, 2.1])
 robot_id = p.loadURDF(
     "assets/sport/table_tennis/wam7.urdf", [0, -1.95, 3], [1, 0, 0, 0], useFixedBase=1
 )
-controller = WAMController(p, robot_id, WAMConfig(), False) # set to True to traj joint_profile
+controller = WAMController(
+    p, robot_id, WAMConfig(), False
+)  # set to True to traj joint_profile
+
 
 def reset():
     p.resetBasePositionAndOrientation(ball_id, [0, 1, 1.3], [0, 0, 0, 1])

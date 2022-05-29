@@ -10,7 +10,7 @@ class WAMController:
         client: bc.BulletClient,
         robot_uid: int,
         cfg: WAMConfig,
-        profile_joints = True,
+        profile_joints=True,
     ):
         self.client = client
         self.robot_uid = robot_uid
@@ -35,13 +35,12 @@ class WAMController:
             - racket_pos[x,y,z] (TODO need vel?)
             - racket_orn[x,y,z]
         """
-        js = self.client.getJointStates(self.robot_uid, self.cfg.j_idx)
-        jp = [s[0] for s in js]
-        jv = [s[1] for s in js]
-        jt = [s[3] for s in js]
         if self.profile_joints:
+            js = self.client.getJointStates(self.robot_uid, self.cfg.j_idx)
+            jp = [s[0] for s in js]
+            jv = [s[1] for s in js]
+            jt = [s[3] for s in js]
             update_jp_plot(self.joint_profile_plt_obj, jp, jv, jt)
-
 
     def ik_pose(self, ef_pos, ef_orn):
         # get IK pose for specified end effector pose and orientation
