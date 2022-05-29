@@ -1,9 +1,9 @@
 from typing import Tuple
 import numpy as np
-from sim.rigid_body import HollowSphere
+from sim.utils.rigid_body import HollowSphere
 from sim.table_tennis.config import BallPhysics, TablePhysics
 from sim.table_tennis.physx import check_collision, drag_force, magnus_force
-from sim.utils import rotation_matrix_from_quat, quat_mult
+from sim.utils.quat import rotation_matrix_from_quat, quat_mult
 
 
 class BallTraj:

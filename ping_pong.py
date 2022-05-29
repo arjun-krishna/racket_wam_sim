@@ -61,27 +61,22 @@ def get_ball_trajectory(pos, quat, vel, ang_vel, t=2, dt=1 / 240):
 ### ARM config ========================================================
 end_effector_index = 8
 
-j_idx = [] # joint_id
-jn = [] # name
-ll = [] # lower limits (null space) 
-ul = [] # upper limits (null space)
-jr = [] # joint ranges = ul - ll?
-rp = [] # rest poses
-jd = [] # joint damping coefficients
+j_idx = []  # joint_id
+jn = []  # name
+ll = []  # lower limits (null space)
+ul = []  # upper limits (null space)
+jr = []  # joint ranges = ul - ll?
+rp = []  # rest poses
+jd = []  # joint damping coefficients
 
 num_joints = p.getNumJoints(robot_id)
 for joint_idx in range(num_joints):
     joint_info = p.getJointInfo(robot_id, joint_idx)
 
-    name, type, damping, lower_limit, upper_limit = [joint_info[i] for i in [1, 2, 6, 8, 9]]
-    print(
-        joint_idx,
-        name, 
-        type,
-        damping,
-        lower_limit,
-        upper_limit
-    )
+    name, type, damping, lower_limit, upper_limit = [
+        joint_info[i] for i in [1, 2, 6, 8, 9]
+    ]
+    print(joint_idx, name, type, damping, lower_limit, upper_limit)
 
     if type == p.JOINT_FIXED:
         continue
@@ -91,20 +86,21 @@ for joint_idx in range(num_joints):
     ll.append(lower_limit)
     ul.append(upper_limit)
     jr.append(upper_limit - lower_limit)
-    rp.append(0.)
+    rp.append(0.0)
     jd.append(damping)
 
 pos_ids = [
-    p.addUserDebugParameter('pos_x', -1, 1, 0),
-    p.addUserDebugParameter('pos_y', -2.95, -0.95, -1.62),
-    p.addUserDebugParameter('pos_z', 0.5, 1.4, 1.286),
+    p.addUserDebugParameter("pos_x", -1, 1, 0),
+    p.addUserDebugParameter("pos_y", -2.95, -0.95, -1.62),
+    p.addUserDebugParameter("pos_z", 0.5, 1.4, 1.286),
 ]
 
-orn_id = p.addUserDebugParameter('roll', -np.pi, np.pi, 0)
+orn_id = p.addUserDebugParameter("roll", -np.pi, np.pi, 0)
 
 ARM_IN_SWING = False
 t = 0
-T = int(0.3 * 240) # 0.3 second (swing end)
+T = int(0.3 * 240)  # 0.3 second (swing end)
+
 
 def enable_swing():
     global ARM_IN_SWING, t
@@ -115,12 +111,14 @@ def enable_swing():
     ball_pos = np.array(ball_pos)
 
     centroid = np.array([0, -1.62, 1.286])
-    dh_side = 0.2 * np.sqrt(3) # \frac{\sqrt{3}}{2} a
+    dh_side = 0.2 * np.sqrt(3)  # \frac{\sqrt{3}}{2} a
 
-    if (ball_pos >= (centroid - dh_side)).all() and \
-        (ball_pos <= (centroid + dh_side)).all():
+    if (ball_pos >= (centroid - dh_side)).all() and (
+        ball_pos <= (centroid + dh_side)
+    ).all():
         ARM_IN_SWING = True
         t = 0
+
 
 # =================================================================
 
@@ -130,14 +128,12 @@ def arm_controller():
     # hitting plane definition
     pos = [p.readUserDebugParameter(id) for id in pos_ids]
     roll = p.readUserDebugParameter(orn_id)
-    orn = p.getQuaternionFromEuler([roll, -np.pi, 0]) # face downwards
-    
-    if ARM_IN_SWING: # assume hitting plan(e has been reached
-        pos[1] -= 0.2*np.sin(2*np.pi*(t/T))
-        joint_poses = p.calculateInverseKinematics(
-            robot_id, end_effector_index, pos, 
-        )
-        target_vel = 2.5*np.cos(2*np.pi*(t/T))
+    orn = p.getQuaternionFromEuler([roll, -np.pi, 0])  # face downwards
+
+    if ARM_IN_SWING:  # assume hitting plan(e has been reached
+        pos[1] -= 0.2 * np.sin(np.pi * (t / T))
+        joint_poses = p.calculateInverseKinematics(robot_id, end_effector_index, pos,)
+        target_vel = 2.5 * np.cos(np.pi * (t / T))
         t += 1
         if t > T:
             ARM_IN_SWING = False
@@ -158,7 +154,7 @@ def arm_controller():
             targetVelocity=target_vel,
             force=500,
             positionGain=0.03,
-            velocityGain=1
+            velocityGain=1,
         )
 
 
@@ -168,6 +164,7 @@ def process_key_events():
         reset()
     if 101 in key_events:  # e
         pass
+
 
 reset()
 while True:
