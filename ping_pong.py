@@ -10,7 +10,7 @@ from sim.arm.joint_profile import JointProfiler
 p.connect(p.GUI)
 p.setAdditionalSearchPath(pd.getDataPath())
 
-p.setGravity(0, 0, -9.8)
+p.setGravity(0, 0, 0)
 p.loadURDF("plane.urdf")
 p.loadURDF("assets/sport/table_tennis/table.urdf", useFixedBase=1)
 # p.loadURDF("assets/sport/table_tennis/racket.urdf", [0, -1.8, 1.1], useFixedBase=1)
@@ -35,15 +35,19 @@ def apply_ball_forces():
     density_air = 1.29  # kg/m^3
     lift_coef = 0.6
     r1 = 0.02  # radius
+    mass = 0.0027 # kg
+    g = 10 # m/s^2
     A = np.pi * r1 * r1
 
+    pos, _ = p.getBasePositionAndOrientation(ball_id)
     v, w = p.getBaseVelocity(ball_id)
     v, w = np.array(v), np.array(w)
 
     F_d = -0.5 * drag_coef * density_air * A * np.linalg.norm(v) * v  # drag
     F_m = 0.5 * lift_coef * density_air * A * r1 * np.cross(w, v)  # magnus force
+    F_g = mass * np.array([0, 0, -g])
 
-    p.applyExternalForce(ball_id, -1, F_d + F_m, [0, 0, 0], p.LINK_FRAME)
+    p.applyExternalForce(ball_id, -1, F_d + F_m + F_g, pos, p.WORLD_FRAME)
 
 
 def get_ball_trajectory(pos, quat, vel, ang_vel, t=2, dt=1 / 240):
