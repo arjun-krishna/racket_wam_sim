@@ -8,7 +8,7 @@ class WAMController:
         self.robot_uid = robot_uid
         self.cfg = cfg
 
-    def step(self, obs):
+    def _compute_obs(self):
         """
         obs: (FrameOfReference: wam/fixed_base_joint)
             - ball[x,y,z]
@@ -22,6 +22,10 @@ class WAMController:
             - target_x_spin [side spin]
         """
         pass
+
+    def step(self):
+        pass
+        
 
     def ik_pose(self, ef_pos, ef_orn):
         # get IK pose for specified end effector pose and orientation
