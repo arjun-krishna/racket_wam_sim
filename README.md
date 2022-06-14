@@ -1,5 +1,5 @@
 # racket_wam_sim
-Tennis/Table-Tennis simulation of Barrett WAM Arm in PyBullet for LfD and RL research
+Tennis/Table-Tennis simulation of Barrett WAM Arm in PyBullet and IsaacSim for LfD and RL research
 
 
 # Table Tennis
