@@ -101,9 +101,9 @@ for joint_idx in range(num_joints):
     jd.append(damping)
 
 pos_ids = [
-    p.addUserDebugParameter("pos_x", -1, 1, 0),
-    p.addUserDebugParameter("pos_y", -2.95, -0.95, -1.62),
-    p.addUserDebugParameter("pos_z", 0.5, 1.4, 1.286),
+    p.addUserDebugParameter("pos_x", -1, 1, -0.021),
+    p.addUserDebugParameter("pos_y", -2.95, -0.95, -1.434),
+    p.addUserDebugParameter("pos_z", 0.5, 1.4, 1.173),
 ]
 
 orn_id = p.addUserDebugParameter("roll", -np.pi, np.pi, 0)
