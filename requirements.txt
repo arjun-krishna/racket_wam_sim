@@ -2,3 +2,4 @@ hydra-core
 pybullet
 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 torch==1.11.0+cu113
+rl-games
