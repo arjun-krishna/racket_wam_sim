@@ -1,8 +1,8 @@
-from cmath import e
 import pybullet as p
 import pybullet_data as pd
 import pybullet_utils.bullet_client as bc
 import numpy as np
+import copy
 import time
 
 #==============================================================================================================
@@ -58,7 +58,7 @@ def get_trajectory(pos: np.ndarray, lin_vel: np.ndarray, ang_vel: np.ndarray, T:
         t += traj_sim_dt
         ball_sim.stepSimulation()
 
-    return time_, traj
+    return np.array(time_), np.array(traj)
 
 #==============================================================================================================
 # World Simulator
@@ -86,6 +86,10 @@ j_names = [
     'wam/wrist_pitch_joint',
     'wam/palm_yaw_joint'
 ]
+j_ll = [-2.6, -1.98, -2.8, -0.9, -4.55, -1.57, -2.95]
+j_ul = [2.6, 1.98, 2.8, 3.1, 1.25, 1.57, 2.95]
+j_ranges = [5.2, 3.96, 5.6, 4.0, 5.8, 3.14, 5.9]
+j_rp = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # rest poses
 j_idx = {}
 for i in range(sim.getNumJoints(sim_assets['arm'])):
     info = sim.getJointInfo(sim_assets['arm'], i)
@@ -106,6 +110,7 @@ controller_enabled = True
 if controller_enabled:
     import robpy.full_promp as promp
     mp = promp.FullProMP.load('promp.json')
+    new_mp = copy.deepcopy(mp)
 
     sample_t = np.linspace(0, 1, 241)
     y = mp.sample([sample_t])[0]
@@ -128,14 +133,23 @@ if controller_enabled:
         global j_inds
         return [js[0] for js in sim.getJointStates(sim_assets['arm'], j_inds)]
 
-    def swing(sim: bc.BulletClient, sim_assets):
-        global phase, y, t, T
+    def swing(sim: bc.BulletClient, sim_assets, ball_eta: float, desired_q: np.ndarray):
+        global phase, y, t, T, mp, new_mp, sample_t
         curr_jpos = read_curr_jpos(sim, sim_assets)
         if phase == 'reset':
             err = np.clip(y[0] - curr_jpos, a_min=-0.05, a_max=0.05)
             pid_control(sim, sim_assets, curr_jpos + err)
             t = (t + 1) % T
             if t == 0:
+                phase = 'condition'
+        if phase == 'condition':
+            if ball_eta < 0.2:
+                new_mp.condition(0.5, 1.0, desired_q)
+                new_mp.condition(0.5, 1.0, y[0])
+                y = new_mp.sample([sample_t])[0]
+                phase = 'wait'
+        if phase == 'wait':
+            if ball_eta < 0.1:
                 phase = 'swing'
                 t = 1
         if phase == 'swing':
@@ -143,6 +157,7 @@ if controller_enabled:
             t = (t + 1) % T
             if t == 0:
                 phase = 'reset'
+                new_mp = copy.deepcopy(mp)
 
 else:
     def create_arm_joints_debug_parameters(sim: bc.BulletClient):
@@ -182,8 +197,42 @@ while True:
     time_, traj = get_trajectory(ball_start_pos, ball_start_lin_vel, ball_start_ang_vel, T=0.7)
     
     # plot trajectory
-    # for a, b in zip(traj[:-1], traj[1:]):
-    #     sim.addUserDebugLine(a, b, [1, 0, 0], 0.1)
+    for a, b in zip(traj[:-1], traj[1:]):
+        sim.addUserDebugLine(a, b, [1, 0, 0], 0.1)
+
+    # compute hitting point
+    x_hit = 1.5
+    hit_idx = np.argmin(np.abs(traj[:,0] - x_hit))
+
+    end_eff_pos = traj[hit_idx,:] - np.array([0.2, 0, 0.1])
+    
+    sim.addUserDebugLine(traj[hit_idx] + [0,0,-0.1], traj[hit_idx] + [0,0,0.1], [0,1,0], 1.0)
+    sim.addUserDebugLine(traj[hit_idx] + [0,-0.1,0], traj[hit_idx] + [0,0.1,0], [0,1,0], 1.0)
+
+    # IK to get desired q
+    end_eff_idx = 6
+
+    for i in range(30):
+        q_hit = sim.calculateInverseKinematics(
+            sim_assets['arm'],
+            end_eff_idx,
+            end_eff_pos,
+            lowerLimits=j_ll,
+            upperLimits=j_ul,
+            jointRanges=j_ranges,
+            restPoses=j_rp
+        )
+
+        for i, v in enumerate(q_hit):
+            sim.resetJointState(
+                sim_assets['arm'],
+                i,
+                v,
+                0
+            )
+        sim.stepSimulation()
+
+    input('press key to continue ...')
 
     for i in range(2 * 240):
         apply_ball_forces(sim, ball_id)
@@ -197,8 +246,10 @@ while True:
                     0
                 )
         else:
-            swing(sim, sim_assets)
+            ball_pos, _ = sim.getBasePositionAndOrientation(ball_id)
+            curr_idx = np.argmin(np.linalg.norm(traj - ball_pos, axis=1))
+            ball_eta = time_[hit_idx] - time_[curr_idx]
+            swing(sim, sim_assets, ball_eta, q_hit)
         sim.stepSimulation()
         time.sleep(sim_dt)
     time.sleep(1)
-
