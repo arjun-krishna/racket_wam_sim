@@ -291,7 +291,7 @@
       <inertia ixx="0.000053" ixy="0.0" ixz="0.0" iyy="0.00106" iyz="0.0" izz="0.000053"/>
     </inertial>
     <visual>
-      <origin xyz="0 0 0.1" rpy="0 3.14 0"/>
+      <origin xyz="0 0 0.1" rpy="0 3.14 1.57"/>
       <material name="RacketRed">
         <color rgba="0.7 0.0 0.0 1.0"/>
       </material>
@@ -300,7 +300,7 @@
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0 0 0.1" rpy="0 3.14 0"/>
+      <origin xyz="0 0 0.1" rpy="0 3.14 1.57"/>
       <geometry>
         <mesh filename="package://meshes/racket.obj"/>
       </geometry>

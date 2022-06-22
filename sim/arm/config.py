@@ -39,5 +39,5 @@ class WAMConfig:
 
     # racket_center - end_effector
     # target_pos - (offset) = end_effector_pos
-    racket_center_offset = np.array([])  # racket offset
-    racket_rp_orn = np.array([])  # rest-pose orientation
+    racket_center_offset = np.array([0, 0, 0.25])  # racket offset
+    racket_rp_orn = np.array([0, 0, 0, 1])  # rest-pose orientation
